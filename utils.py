@@ -3,6 +3,8 @@ import numpy as np
 import random
 
 import torch
+import torch.nn as nn
+from torch.nn import BCEWithLogitsLoss
 import torchaudio
 from torch.utils.data import Dataset, DataLoader
 
@@ -73,3 +75,57 @@ def create_aesdd_dataloader(file_path, processor, label_list, batch_size, shuffl
 
     ds = greekEmotionDataset(df, processor, label_list)
     return DataLoader(ds, batch_size = batch_size, shuffle = shuffle)
+
+'''
+Create Classifier Model
+'''
+class ClassificationHead(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        self.dropout = nn.Dropout(config.final_dropout)
+        self.out_proj = nn.Linear(config.hidden_size, config.num_labels)
+
+    def forward(self, features, **kwargs):
+        x = features
+        x = self.dropout(x)
+        x = self.dense(x)
+        x = torch.tanh(x)
+        x = self.dropout(x)
+        x = self.out_proj(x)
+        return x
+class EmotionClassifier(nn.Module):
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels = config.num_labels
+        self.config = config
+        self.wav2vec2 = Wav2Vec2Model.from_pretrained(config)
+        self.classifier = ClassificationHead(config)
+
+        self.init_weights()
+
+    def freeze_feature_extractor(self):
+        self.wav2vec2.feature_extractor.freeze_feature_extractor()
+
+    def merged_strategy(self, hidden_states):
+        return torch.mean(hidden_states, dim=1)
+
+    def forward(self, input_values, attention_mask = None, labels = None):
+        outputs = self.wav2vec2(
+            input_values,
+            attention_mask = attention_mask
+        )
+        hidden_states = outputs[0]
+        hidden_states = self.merged_strategy(hidden_states)
+        logits = self.classifier(hidden_states)
+
+        loss = None
+        if labels is not None:
+            self.config.problem_type = "multi_label_classification"
+            loss_fct = BCEWithLogitsLoss()
+            loss = loss_fct(logits, labels)
+
+        return logits, loss
+
+
