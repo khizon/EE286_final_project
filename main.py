@@ -274,6 +274,9 @@ class CTCTrainer(Trainer):
 
 if __name__ == '__main__':
     
+    WANDB_SILENT=True
+    WANDB_LOG_MODEL=True
+    
     # Load dataset
     data_files = {
         "train": "data/train.csv", 
@@ -334,13 +337,6 @@ if __name__ == '__main__':
         batched=True,
         num_proc=4
     )
-    
-    idx = 0
-#     print(f"Training input_values: {len(train_dataset[idx]['input_values'])}")
-#     print(f"Training attention_mask: {len(train_dataset[idx]['attention_mask'])}")
-#     print(f"Training labels: {train_dataset[idx]['labels']} - {train_dataset[idx]['emotion']}")
-    
-#     print('DONE')
 
     data_collator = DataCollatorCTCWithPadding(processor=processor, padding=True)
     
@@ -356,18 +352,20 @@ if __name__ == '__main__':
     model.freeze_feature_extractor()
     
     training_args = TrainingArguments(
+        report_to = 'wandb',
         output_dir="data/wav2vec2-xlsr-greek-speech-emotion-recognition",
         per_device_train_batch_size=4,
         per_device_eval_batch_size=4,
         gradient_accumulation_steps=2,
         evaluation_strategy="steps",
-        num_train_epochs=1.0,
+        num_train_epochs=3.0,
         fp16=True,
-        save_steps=10,
-        eval_steps=10,
+        save_steps=20,
+        eval_steps=30,
         logging_steps=10,
         learning_rate=1e-4,
         save_total_limit=2,
+        run_name = 'custom_training'            # name of the W&B run
     )
     
     trainer = CTCTrainer(
