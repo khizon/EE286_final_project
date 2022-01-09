@@ -1,0 +1,1 @@
+web: sh setup.sh && python download_dataset.py && streamlit run demo.py
