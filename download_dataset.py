@@ -15,16 +15,16 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.join('data')):
         os.makedirs(os.path.join('data'))
         
-    # os.system('gdown https://drive.google.com/uc?id=1_IAWexEWpH-ly_JaA5EGfZDp-_3flkN1')
-    # os.system('unzip -q aesdd.zip -d data/')
-    # os.rename(os.path.join('data', 'Acted Emotional Speech Dynamic Database'),
-    #           os.path.join('data', 'aesdd'))
+    os.system('gdown https://drive.google.com/uc?id=1_IAWexEWpH-ly_JaA5EGfZDp-_3flkN1')
+    os.system('unzip -q aesdd.zip -d data/')
+    os.rename(os.path.join('data', 'Acted Emotional Speech Dynamic Database'),
+              os.path.join('data', 'aesdd'))
     
     data = []
     # Load the annotations file
-    for path in tqdm(Path("data\\aesdd").glob("**\\*.wav")):
-        name = str(path).split("\\")[-1]
-        label = str(path).split('\\')[-2]
+    for path in tqdm(Path("data/aesdd").glob("**/*.wav")):
+        name = str(path).split("/")[-1]
+        label = str(path).split('/')[-2]
         path = os.path.join("data", "aesdd", label, name)
         print(path)
 
