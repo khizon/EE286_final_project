@@ -11,9 +11,9 @@ def cache_model():
     return config, processor, model, device
 
 if __name__ == '__main__':
-    with wandb.init() as run:
-        artifact = run.use_artifact('khizon/EE286_final_project/aesdd_classifier:v0', type='model')
-        artifact_dir = artifact.download()
+    # with wandb.init() as run:
+    #     artifact = run.use_artifact('khizon/EE286_final_project/aesdd_classifier:v0', type='model')
+    #     artifact_dir = artifact.download()
     config, processor, model, device = cache_model()
 
-    model.push_to_hub("greek-emotion-classifier-demo")
+    model.push_to_hub("greek-speech-emotion-classifier-demo")
